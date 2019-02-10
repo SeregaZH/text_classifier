@@ -2,17 +2,20 @@ import os
 import numpy as np
 from os.path import isfile, join
 import nltk
+from nltk.tokenize import RegexpTokenizer
 # nltk.download()
 
 class NewsTextParser(object):
     def __init__(self, base_path):
         self.base_path = base_path
+        self.stemmer = nltk.PorterStemmer()
+        self.tockenizer = RegexpTokenizer(r'\w+')
 
     def __read_content(self, file_path):
         with open(file_path, 'r') as file:
             text=file.read().replace('\n', '')
             print('File by path {0} readed'.format(file_path))
-            return nltk.word_tokenize(text)
+            return [self.stemmer.stem(w).lower() for w in self.tockenizer.tokenize(text)]
 
     def load_dataset(self):
        dirs = [dir for dir in os.listdir(self.base_path)]
