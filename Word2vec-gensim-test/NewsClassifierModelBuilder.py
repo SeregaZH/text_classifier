@@ -1,6 +1,6 @@
 import keras
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from keras.optimizers import SGD
 
 class NewsClassifierModelBuilder(object):
@@ -8,6 +8,7 @@ class NewsClassifierModelBuilder(object):
         self.model = Sequential([
                 Dense(64, activation='relu', input_dim=vect_size),
                 Dense(128, activation='relu'),
+                Dropout(0.3),
                 Dense(64, activation='relu'),
                 Dense(label_size, activation='softmax')
             ])
@@ -20,4 +21,4 @@ class NewsClassifierModelBuilder(object):
 
     def train(self, dataset, labels, num_classes, epochs=20, batch_size=64):
         labales_matrix = keras.utils.to_categorical(labels, num_classes)
-        return self.model.fit(dataset, labales_matrix, epochs=epochs, batch_size=batch_size, validation_split=0.1)
+        return self.model.fit(dataset, labales_matrix, epochs=epochs, batch_size=batch_size, validation_split=0.2)
