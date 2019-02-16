@@ -3,15 +3,15 @@ import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
 import pickle as pkl
-from MeanEmbeddingsVectorizer import MeanEmbeddingsVectorizer
+from TfIdfEmbeddingsVectorizer import TfIdfEmbeddingsVectorizer
 import numpy as np
 import argparse
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
-from NewsTextParser import NewsTextParser
+from NewsTextParser import NewsTextParser, Tokenizer
 from NewsClassifierModelBuilder import NewsClassifierModelBuilder
 
-plotly.tools.set_credentials_file(username='seregazh', api_key='**********************')
+plotly.tools.set_credentials_file(username='seregazh', api_key='******************')
 
 def flatten_one(arr):
     result = []
@@ -39,26 +39,27 @@ epoch = 400
 
 if not os.path.exists(model_path) or args.train:
     text_parser = NewsTextParser(full_path)
-    dataset, labels = text_parser.load_dataset()
-    examples_list = flatten_one([[ (ex, examples[0]) for ex in examples[1]] for examples in dataset])
-    dataset_list = np.array([[i[0].tolist(), labels[i[1]]] for i in examples_list])
+    dataset, labels, content = text_parser.load_dataset()
+    dataset_list = np.array([[i[1], labels[i[0]]] for i in dataset])
+    content_list = [c[1] for c in content]
     np.random.shuffle(dataset_list)
     training_text_list, labels_list = (dataset_list[:,0], dataset_list[:,1])
     model = Word2Vec(training_text_list, size=100, window=5, min_count=1, workers=8)
     model.save(model_path)
-    mean_vectorizer = MeanEmbeddingsVectorizer(model)
-    mean_vectors = np.array([mean_vectorizer.vectorize(v) for v in training_text_list])
+    tfidf_vectorizer = TfIdfEmbeddingsVectorizer(model, Tokenizer().tokenize)
+    tfidf_vectorizer.fit(content_list)
+    doc_vectors = np.array([tfidf_vectorizer.vectorize(v) for v in training_text_list])
     with open(vectors_file, "wb") as vfile:
-        pkl.dump((mean_vectors, labels_list, labels), vfile)
+        pkl.dump((doc_vectors, labels_list, labels), vfile)
 else:
     model = Word2Vec.load(model_path)
     with open(vectors_file, "rb") as vfile:
         data = pkl.load(vfile)
-        mean_vectors, labels_list, labels = data
+        doc_vectors, labels_list, labels = data
 
 news_model = NewsClassifierModelBuilder(model.wv.vector_size, len(labels))
 news_model.compile()
-history = news_model.train(np.array(mean_vectors), labels_list, len(labels), epoch)
+history = news_model.train(np.array(doc_vectors), labels_list, len(labels), epoch)
 
 # create chart
 x_dim = np.linspace(0, epoch, epoch, dtype = np.int32)

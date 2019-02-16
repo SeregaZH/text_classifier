@@ -6,10 +6,12 @@ from keras.optimizers import SGD
 class NewsClassifierModelBuilder(object):
     def __init__(self, vect_size, label_size):
         self.model = Sequential([
-                Dense(64, activation='relu', input_dim=vect_size),
-                Dense(128, activation='relu'),
+                Dense(100, activation='relu', input_dim=vect_size),
+                Dropout(0.1),
+                Dense(200, activation='relu'),
                 Dropout(0.3),
-                Dense(64, activation='relu'),
+                Dense(100, activation='relu'),
+                Dropout(0.1),
                 Dense(label_size, activation='softmax')
             ])
 
