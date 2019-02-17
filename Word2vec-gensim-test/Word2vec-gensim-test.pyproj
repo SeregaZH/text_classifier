@@ -34,6 +34,7 @@
     <Compile Include="NewsTextParser.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TfIdfEmbeddingsVectorizer.py" />
     <Compile Include="Word2vec_gensim_test.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
